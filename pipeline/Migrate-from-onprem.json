@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "MySqlSource",
-						"query": "SELECT\n    table_schema AS database_name,\n    table_name\nFROM information_schema.tables\nWHERE table_type = 'BASE TABLE'\n  AND table_schema like '%db';"
+						"query": "  SELECT\n  source_schema,\n  source_table,\n  watermark_column\nFROM etl_control.pipeline_work_queue\nWHERE status = 'Pending'\n"
 					},
 					"dataset": {
 						"referenceName": "MySqlTable1",
@@ -25,8 +25,72 @@
 					},
 					"firstRowOnly": false
 				}
+			},
+			{
+				"name": "ForEachTable",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookuptables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookuptables').output.value",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"batchCount": 1,
+					"activities": [
+						{
+							"name": "Set variable1",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "currentTable",
+								"value": "@concat(item().source_schema, '.', item().source_table)\n"
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Control pipeline queue",
+				"description": "Stored procedure is to control pipeline",
+				"type": "SqlServerStoredProcedure",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureParameters": {
+						"value": "p_run_id = @pipeline().RunId",
+						"type": "Expression"
+					}
+				}
 			}
 		],
+		"variables": {
+			"currentTable": {
+				"type": "String"
+			}
+		},
 		"annotations": []
 	}
 }
