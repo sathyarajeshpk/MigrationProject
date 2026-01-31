@@ -1,0 +1,15 @@
+{
+	"name": "MySqlTable1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "MySqlonprem",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"dbName": "retail_db"
+			}
+		},
+		"annotations": [],
+		"type": "MySqlTable",
+		"schema": []
+	}
+}

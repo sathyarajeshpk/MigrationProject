@@ -1,0 +1,32 @@
+{
+	"name": "Migrate-from-onprem",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookuptables",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "MySqlSource",
+						"query": "SELECT\n    table_schema AS database_name,\n    table_name\nFROM information_schema.tables\nWHERE table_type = 'BASE TABLE'\n  AND table_schema like '%db';"
+					},
+					"dataset": {
+						"referenceName": "MySqlTable1",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			}
+		],
+		"annotations": []
+	}
+}
