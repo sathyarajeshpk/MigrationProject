@@ -17,7 +17,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "MySqlSource",
-						"query": "  SELECT\n  source_schema,\n  source_table,\n  watermark_column\nFROM etl_control.pipeline_work_queue\nWHERE status = 'Pending'\n"
+						"query": {
+							"value": "SELECT\n    table_schema AS database_name,\n    table_name\nFROM information_schema.tables\nWHERE table_type = 'BASE TABLE'\n  AND table_schema like '%db';",
+							"type": "Expression"
+						}
 					},
 					"dataset": {
 						"referenceName": "MySqlTable1",
@@ -47,37 +50,55 @@
 					"batchCount": 1,
 					"activities": [
 						{
-							"name": "Set variable1",
-							"type": "SetVariable",
+							"name": "Copy_To_Bronze",
+							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
 								"secureOutput": false,
 								"secureInput": false
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"variableName": "currentTable",
-								"value": "@concat(item().source_schema, '.', item().source_table)\n"
-							}
+								"source": {
+									"type": "MySqlSource",
+									"query": "@concat(\n  'SELECT * FROM ',\n  item().source_schema,\n  '.',\n  item().source_table\n)\n"
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "MySqlTable1",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_adls_bronze_parquet",
+									"type": "DatasetReference"
+								}
+							]
 						}
 					]
-				}
-			},
-			{
-				"name": "PopulateWorkQueue",
-				"type": "Script",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"scripts": [],
-					"scriptBlockExecutionTimeout": "02:00:00"
 				}
 			}
 		],

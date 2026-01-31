@@ -1,0 +1,23 @@
+{
+	"name": "ds_adls_bronze_parquet",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ToDatalake",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": {
+					"value": "@concat(\n  'bronze/mysql/',\n  item().database_name,\n  '/',\n  item().table_name,\n  '/load_date=',\n  formatDateTime(utcNow(),'yyyy-MM-dd')\n)\n",
+					"type": "Expression"
+				},
+				"fileSystem": "datalake"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
