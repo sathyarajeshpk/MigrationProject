@@ -64,11 +64,8 @@
 				}
 			},
 			{
-				"name": "Control pipeline queue",
-				"description": "Stored procedure is to control pipeline",
-				"type": "SqlServerStoredProcedure",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
+				"name": "PopulateWorkQueue",
+				"type": "Script",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -79,10 +76,8 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureParameters": {
-						"value": "p_run_id = @pipeline().RunId",
-						"type": "Expression"
-					}
+					"scripts": [],
+					"scriptBlockExecutionTimeout": "02:00:00"
 				}
 			}
 		],
