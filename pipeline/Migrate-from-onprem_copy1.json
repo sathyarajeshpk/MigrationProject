@@ -1,10 +1,12 @@
 {
-	"name": "Migrate-from-onprem",
+	"name": "Migrate-from-onprem_copy1",
 	"properties": {
 		"activities": [
 			{
 				"name": "Lookuptables",
 				"type": "Lookup",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "PopulateChangedTables",
@@ -39,6 +41,8 @@
 			{
 				"name": "ForEachTable",
 				"type": "ForEach",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "Lookuptables",
@@ -148,6 +152,8 @@
 			{
 				"name": "PopulateChangedTables",
 				"type": "Lookup",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
