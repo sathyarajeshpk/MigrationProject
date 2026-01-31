@@ -1,0 +1,27 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "datamigration-sathya"
+		},
+		"MySqlonprem_password": {
+			"value": ""
+		},
+		"MySqlonprem_properties_typeProperties_server": {
+			"value": "localhost"
+		},
+		"MySqlonprem_properties_typeProperties_database": {
+			"value": "@{linkedService().dbName}"
+		},
+		"MySqlonprem_properties_typeProperties_username": {
+			"value": "root"
+		},
+		"Onpremsql_properties_typeProperties_baseUrl": {
+			"value": "https://onpremsqlsathya.vault.azure.net/"
+		},
+		"ToDatalake_properties_typeProperties_url": {
+			"value": "https://datamigrationsathya.dfs.core.windows.net/"
+		}
+	}
+}
