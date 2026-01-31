@@ -1,0 +1,9 @@
+{
+	"name": "datamigration-sathya",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "798cbd22-04a0-4723-8819-118b553f5fa0",
+		"tenantId": "f739d4de-f4cd-4fd4-9cb9-8b9edd1723c1"
+	}
+}
