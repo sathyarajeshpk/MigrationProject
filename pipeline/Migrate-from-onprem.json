@@ -66,7 +66,7 @@
 								"source": {
 									"type": "MySqlSource",
 									"query": {
-										"value": "@concat(\n  'SELECT * FROM ',\n  item().database_name, '.', item().table_name,\n  ' WHERE last_updated_at > (',\n  'SELECT last_watermark FROM etl_control.table_watermark ',\n  'WHERE database_name = ''', item().database_name,\n  ''' AND table_name = ''', item().table_name, '''',\n  ')'\n)\n",
+										"value": "@concat(\n  'SELECT * FROM `',\n  item().database_name, '`.`', item().table_name,\n  '` WHERE last_updated_at > (',\n  'SELECT last_watermark FROM etl_control.table_watermark ',\n  'WHERE database_name = ''', item().database_name,\n  ''' AND table_name = ''', item().table_name, '''',\n  ')'\n)\n",
 										"type": "Expression"
 									}
 								},
@@ -124,7 +124,10 @@
 							"typeProperties": {
 								"source": {
 									"type": "MySqlSource",
-									"query": "@concat(\n  'UPDATE etl_control.table_watermark ',\n  'SET last_watermark = (',\n  'SELECT COALESCE(MAX(last_updated_at), last_watermark) FROM ',\n  item().database_name, '.', item().table_name,\n  ') ',\n  'WHERE database_name = ''', item().database_name,\n  ''' AND table_name = ''', item().table_name, ''''\n)\n"
+									"query": {
+										"value": "@concat(\n  'UPDATE etl_control.table_watermark ',\n  'SET last_watermark = (',\n  'SELECT COALESCE(MAX(last_updated_at), last_watermark) FROM ',\n  item().database_name, '.', item().table_name,\n  ') ',\n  'WHERE database_name = ''', item().database_name,\n  ''' AND table_name = ''', item().table_name, ''''\n)\n",
+										"type": "Expression"
+									}
 								},
 								"dataset": {
 									"referenceName": "MySqlTable1",
