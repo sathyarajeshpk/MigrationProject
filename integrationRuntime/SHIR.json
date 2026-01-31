@@ -1,7 +1,0 @@
-{
-	"name": "SHIR",
-	"properties": {
-		"type": "SelfHosted",
-		"description": "On prem db"
-	}
-}
