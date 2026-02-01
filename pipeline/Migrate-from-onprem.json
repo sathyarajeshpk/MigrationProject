@@ -167,35 +167,6 @@
 						"type": "DatasetReference"
 					}
 				}
-			},
-			{
-				"name": "Lookuptables_copy1",
-				"type": "Lookup",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 1,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "MySqlSource",
-						"query": {
-							"value": "SELECT\n  database_name,\n  table_name\nFROM etl_control.changed_tables_queue;\n",
-							"type": "Expression"
-						}
-					},
-					"dataset": {
-						"referenceName": "MySqlTable1",
-						"type": "DatasetReference"
-					},
-					"firstRowOnly": false
-				}
 			}
 		],
 		"variables": {
