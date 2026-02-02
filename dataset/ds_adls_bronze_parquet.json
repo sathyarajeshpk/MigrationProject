@@ -11,7 +11,7 @@
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"folderPath": {
-					"value": "@concat(\n  'bronze/mysql/',\n  item().database_name,\n  '/',\n  item().table_name,\n  '/load_date=',\n  formatDateTime(utcNow(),'yyyy-MM-dd')\n)\n",
+					"value": "@concat(\n  'mysql/',\n  item().database_name,\n  '/',\n  item().table_name,\n  '/load_date=',\n  formatDateTime(utcNow(),'yyyy-MM-dd')\n)\n",
 					"type": "Expression"
 				},
 				"fileSystem": "datalake"
