@@ -100,7 +100,14 @@
 								{
 									"name": "Lookup_Table_Size",
 									"type": "Lookup",
-									"dependsOn": [],
+									"dependsOn": [
+										{
+											"activity": "Lookup_LastWatermark",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
 									"policy": {
 										"timeout": "0.12:00:00",
 										"retry": 0,
@@ -223,11 +230,11 @@
 									}
 								},
 								{
-									"name": "UpdateWatermark_copy2",
+									"name": "UpdateWatermark",
 									"type": "Lookup",
 									"dependsOn": [
 										{
-											"activity": "Set_NewWatermark_copy1",
+											"activity": "Set_NewWatermark",
 											"dependencyConditions": [
 												"Succeeded"
 											]
@@ -257,7 +264,7 @@
 									}
 								},
 								{
-									"name": "Set_NewWatermark_copy1",
+									"name": "Set_NewWatermark",
 									"type": "SetVariable",
 									"dependsOn": [
 										{
@@ -277,6 +284,33 @@
 										"value": {
 											"value": "@formatDateTime(addMinutes(utcNow(),330),'yyyy-MM-dd HH:mm:ss')\n",
 											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Lookup_LastWatermark",
+									"type": "Lookup",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "MySqlSource",
+											"query": {
+												"value": "@concat(\n  'SELECT last_watermark ',\n  'FROM etl_control.table_watermark ',\n  'WHERE database_name = ''', item().database_name, ''' ',\n  'AND table_name = ''', item().table_name, ''''\n)\n",
+												"type": "Expression"
+											}
+										},
+										"dataset": {
+											"referenceName": "MySqlTable1",
+											"type": "DatasetReference",
+											"parameters": {}
 										}
 									}
 								}
