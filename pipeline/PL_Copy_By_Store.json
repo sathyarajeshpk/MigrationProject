@@ -18,7 +18,7 @@
 					"source": {
 						"type": "MySqlSource",
 						"query": {
-							"value": "@concat(\n  'SELECT DISTINCT store_id ',\n  'FROM `', pipeline().parameters.database_name, '`.`',\n           pipeline().parameters.table_name, '` ',\n  'WHERE `', pipeline().parameters.watermark_column, '` > ''',\n  if(\n     equals(pipeline().parameters.last_watermark, ''),\n     '1900-01-01 00:00:00',\n     pipeline().parameters.last_watermark\n  ),\n  ''' ',\n  'AND `', pipeline().parameters.watermark_column, '` <= ''',\n  pipeline().parameters.new_watermark,\n  ''''\n)\n",
+							"value": "@concat(\n  'SELECT DISTINCT store_id ',\n  'FROM `', pipeline().parameters.database_name, '`.`',\n            pipeline().parameters.table_name, '` ',\n  'WHERE `', pipeline().parameters.watermark_column, '` > ''',\n  if(\n      or(\n          equals(pipeline().parameters.last_watermark, ''),\n          equals(pipeline().parameters.last_watermark, null)\n      ),\n      '1900-01-01 00:00:00',\n      pipeline().parameters.last_watermark\n  ),\n  ''' ',\n  'AND `', pipeline().parameters.watermark_column, '` <= ''',\n  pipeline().parameters.new_watermark,\n  ''''\n)\n",
 							"type": "Expression"
 						}
 					},
