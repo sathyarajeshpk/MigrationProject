@@ -17,10 +17,6 @@
 			"p_load_date": {
 				"type": "string",
 				"defaultValue": "@formatDateTime(utcNow(),'yyyy-MM-dd')"
-			},
-			"p_store_id": {
-				"type": "string",
-				"defaultValue": "@item().store_id"
 			}
 		},
 		"annotations": [],
@@ -29,7 +25,7 @@
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"folderPath": {
-					"value": "@concat(\n  'mysql/',\n  dataset().p_database_name,\n  '/',\n  dataset().p_table_name,\n  '/load_date=',\n  dataset().p_load_date,\n  '/store_id=',\n  dataset().p_store_id\n)\n",
+					"value": "@concat(\n  'mysql/',\n  item().database_name,\n  '/',\n  item().table_name,\n  '/load_date=',\n  formatDateTime(utcNow(),'yyyy-MM-dd')\n)\n",
 					"type": "Expression"
 				},
 				"fileSystem": "datalake"
