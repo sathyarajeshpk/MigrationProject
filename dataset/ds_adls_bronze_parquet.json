@@ -5,13 +5,31 @@
 			"referenceName": "ToDatalake",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"p_database_name": {
+				"type": "string",
+				"defaultValue": "@pipeline().parameters.database_name"
+			},
+			"p_table_name": {
+				"type": "string",
+				"defaultValue": "@pipeline().parameters.table_name"
+			},
+			"p_store_id": {
+				"type": "string",
+				"defaultValue": "@item().store_id"
+			},
+			"p_load_date": {
+				"type": "string",
+				"defaultValue": "@formatDateTime(utcNow(),'yyyy-MM-dd')"
+			}
+		},
 		"annotations": [],
 		"type": "Parquet",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"folderPath": {
-					"value": "@concat(\n  'mysql/',\n  item().database_name,\n  '/',\n  item().table_name,\n  '/load_date=',\n  formatDateTime(utcNow(),'yyyy-MM-dd')\n)\n",
+					"value": "@concat(\n  'mysql/',\n  pipeline().parameters.database_name,\n  '/',\n  pipeline().parameters.table_name,\n  '/load_date=',\n  formatDateTime(utcNow(),'yyyy-MM-dd'),\n  '/store_id=',\n  item().store_id\n)\n",
 					"type": "Expression"
 				},
 				"fileSystem": "datalake"
