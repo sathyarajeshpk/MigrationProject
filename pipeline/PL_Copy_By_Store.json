@@ -1,0 +1,121 @@
+{
+	"name": "PL_Copy_By_Store",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup_StoreIDs",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "MySqlSource",
+						"query": "@concat(\n  'SELECT DISTINCT store_id ',\n  'FROM `', pipeline().parameters.database_name, '`.`',\n           pipeline().parameters.table_name, '` ',\n  'WHERE `', pipeline().parameters.watermark_column, '` > ''',\n  pipeline().parameters.last_watermark, ''' ',\n  'AND `', pipeline().parameters.watermark_column, '` <= ''',\n  pipeline().parameters.new_watermark, ''''\n)\n"
+					},
+					"dataset": {
+						"referenceName": "MySqlTable1",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach_Store",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup_StoreIDs",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup_StoreIDs').output.value",
+						"type": "Expression"
+					},
+					"batchCount": 10,
+					"activities": [
+						{
+							"name": "Batch_Copy_PerStoreID",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "MySqlSource",
+									"query": "@concat(\n  'SELECT * FROM `',\n  pipeline().parameters.database_name, '`.`',\n  pipeline().parameters.table_name, '` ',\n  'WHERE store_id = ', item().store_id, ' ',\n  'AND `', pipeline().parameters.watermark_column, '` > ''',\n  pipeline().parameters.last_watermark, ''' ',\n  'AND `', pipeline().parameters.watermark_column, '` <= ''',\n  pipeline().parameters.new_watermark, ''''\n)\n"
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings",
+										"copyBehavior": "PreserveHierarchy"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "MySqlTable1",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_adls_bronze_parquet",
+									"type": "DatasetReference"
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"database_name": {
+				"type": "string"
+			},
+			"table_name": {
+				"type": "string"
+			},
+			"watermark_column": {
+				"type": "string"
+			},
+			"last_watermark": {
+				"type": "string"
+			},
+			"new_watermark": {
+				"type": "string"
+			}
+		},
+		"annotations": []
+	}
+}
