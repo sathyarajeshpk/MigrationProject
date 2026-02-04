@@ -397,8 +397,6 @@
 					{
 						"name": "Lookuptables",
 						"type": "Lookup",
-						"state": "Inactive",
-						"onInactiveMarkAs": "Succeeded",
 						"dependsOn": [
 							{
 								"activity": "PopulateChangedTables",
@@ -434,8 +432,6 @@
 					{
 						"name": "ForEachTable",
 						"type": "ForEach",
-						"state": "Inactive",
-						"onInactiveMarkAs": "Succeeded",
 						"dependsOn": [
 							{
 								"activity": "Lookuptables",
@@ -458,7 +454,7 @@
 									"type": "Lookup",
 									"dependsOn": [
 										{
-											"activity": "Copy_To_Bronze",
+											"activity": "Set_NewWatermark",
 											"dependencyConditions": [
 												"Succeeded"
 											]
@@ -476,7 +472,7 @@
 										"source": {
 											"type": "MySqlSource",
 											"query": {
-												"value": "@concat(\n  'CALL etl_control.update_table_watermark(''',\n  item().database_name,\n  ''',''',\n  item().table_name,\n  ''')'\n)",
+												"value": "@concat(\n  'CALL etl_control.update_table_watermark(''',\n  item().database_name,\n  ''',''',\n  item().table_name,\n  ''',''',\n  variables('CurrentHighWatermark'),\n  ''')'\n)",
 												"type": "Expression"
 											}
 										},
@@ -541,6 +537,30 @@
 											"parameters": {}
 										}
 									]
+								},
+								{
+									"name": "Set_NewWatermark",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Copy_To_Bronze",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "CurrentHighWatermark",
+										"value": {
+											"value": "@formatDateTime(utcNow(),'yyyy-MM-dd HH:mm:ss')\n",
+											"type": "Expression"
+										}
+									}
 								}
 							]
 						}
@@ -548,8 +568,6 @@
 					{
 						"name": "PopulateChangedTables",
 						"type": "Lookup",
-						"state": "Inactive",
-						"onInactiveMarkAs": "Succeeded",
 						"dependsOn": [],
 						"policy": {
 							"timeout": "0.12:00:00",
@@ -751,6 +769,9 @@
 				},
 				"variables": {
 					"currentTable": {
+						"type": "String"
+					},
+					"CurrentHighWatermark": {
 						"type": "String"
 					}
 				},
