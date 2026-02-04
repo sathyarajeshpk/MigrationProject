@@ -161,7 +161,7 @@
 							"typeProperties": {
 								"variableName": "CurrentHighWatermark",
 								"value": {
-									"value": "@formatDateTime(utcNow(),'yyyy-MM-dd HH:mm:ss')\n",
+									"value": "@formatDateTime(addMinutes(utcNow(),330),'yyyy-MM-dd HH:mm:ss')\n",
 									"type": "Expression"
 								}
 							}
