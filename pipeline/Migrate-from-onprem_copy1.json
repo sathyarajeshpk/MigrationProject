@@ -79,7 +79,7 @@
 								"source": {
 									"type": "MySqlSource",
 									"query": {
-										"value": "@concat(\n  'CALL etl_control.update_table_watermark(''',\n  item().database_name,\n  ''',''',\n  item().table_name,\n  ''',''',\n  variables('CurrentHighWatermark'),\n  ''')'\n)\n",
+										"value": "@concat(\n  'CALL etl_control.update_table_watermark(''',\n  item().database_name,\n  ''',''',\n  item().table_name,\n  ''',''',\n  variables('CurrentHighWatermark'),\n  ''')'\n)",
 										"type": "Expression"
 									}
 								},
