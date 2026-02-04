@@ -98,39 +98,6 @@
 								},
 								"ifFalseActivities": [
 									{
-										"name": "UpdateWatermark_copy2",
-										"type": "Lookup",
-										"dependsOn": [
-											{
-												"activity": "Set_NewWatermark_copy1",
-												"dependencyConditions": [
-													"Succeeded"
-												]
-											}
-										],
-										"policy": {
-											"timeout": "0.12:00:00",
-											"retry": 0,
-											"retryIntervalInSeconds": 30,
-											"secureOutput": false,
-											"secureInput": false
-										},
-										"userProperties": [],
-										"typeProperties": {
-											"source": {
-												"type": "MySqlSource",
-												"query": {
-													"value": "@concat(\n  'CALL etl_control.update_table_watermark(''',\n  item().database_name,\n  ''',''',\n  item().table_name,\n  ''',''',\n  variables('CurrentHighWatermark'),\n  ''')'\n)",
-													"type": "Expression"
-												}
-											},
-											"dataset": {
-												"referenceName": "MySqlTable1",
-												"type": "DatasetReference"
-											}
-										}
-									},
-									{
 										"name": "Copy_To_Bronze_copy2",
 										"description": "This does incremental copy to the bronze layer ",
 										"type": "Copy",
@@ -182,32 +149,90 @@
 												"type": "DatasetReference"
 											}
 										]
-									},
+									}
+								],
+								"ifTrueActivities": [
 									{
-										"name": "Set_NewWatermark_copy1",
-										"type": "SetVariable",
-										"dependsOn": [
-											{
-												"activity": "Copy_To_Bronze_copy2",
-												"dependencyConditions": [
-													"Succeeded"
-												]
-											}
-										],
+										"name": "PL_Copy_By_Store",
+										"type": "ExecutePipeline",
+										"dependsOn": [],
 										"policy": {
-											"secureOutput": false,
 											"secureInput": false
 										},
 										"userProperties": [],
 										"typeProperties": {
-											"variableName": "CurrentHighWatermark",
-											"value": {
-												"value": "@formatDateTime(addMinutes(utcNow(),330),'yyyy-MM-dd HH:mm:ss')\n",
-												"type": "Expression"
+											"pipeline": {
+												"referenceName": "PL_Copy_By_Store",
+												"type": "PipelineReference"
+											},
+											"waitOnCompletion": true,
+											"parameters": {
+												"database_name": "@item().database_name\n",
+												"table_name": "@item().table_name\n",
+												"watermark_column": "@item().watermark_column\n",
+												"last_watermark": "@activity('Lookup_LastWatermark').output.firstRow.last_watermark\n",
+												"new_watermark": "@variables('CurrentHighWatermark')\n"
 											}
 										}
 									}
 								]
+							}
+						},
+						{
+							"name": "UpdateWatermark_copy2",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "Set_NewWatermark_copy1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "MySqlSource",
+									"query": {
+										"value": "@concat(\n  'CALL etl_control.update_table_watermark(''',\n  item().database_name,\n  ''',''',\n  item().table_name,\n  ''',''',\n  variables('CurrentHighWatermark'),\n  ''')'\n)",
+										"type": "Expression"
+									}
+								},
+								"dataset": {
+									"referenceName": "MySqlTable1",
+									"type": "DatasetReference"
+								}
+							}
+						},
+						{
+							"name": "Set_NewWatermark_copy1",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "If Condition1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "CurrentHighWatermark",
+								"value": {
+									"value": "@formatDateTime(addMinutes(utcNow(),330),'yyyy-MM-dd HH:mm:ss')\n",
+									"type": "Expression"
+								}
 							}
 						}
 					]
