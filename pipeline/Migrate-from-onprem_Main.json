@@ -25,7 +25,7 @@
 					"source": {
 						"type": "MySqlSource",
 						"query": {
-							"value": "SELECT\n  database_name,\n  table_name\nFROM etl_control.changed_tables_queue;\n",
+							"value": "SELECT\n    q.database_name,\n    q.table_name,\n    w.watermark_column\nFROM etl_control.changed_tables_queue q\nJOIN etl_control.table_watermark w\n  ON q.database_name = w.database_name\n AND q.table_name    = w.table_name;\n",
 							"type": "Expression"
 						}
 					},
@@ -79,7 +79,7 @@
 								"source": {
 									"type": "MySqlSource",
 									"query": {
-										"value": "SELECT\n    (data_length + index_length) / 1024 / 1024 AS table_size_mb\nFROM information_schema.tables\nWHERE table_schema = '@{item().database_name}'\n  AND table_name   = '@{item().table_name}';\n",
+										"value": "SELECT\n  CAST( (data_length + index_length) / 1024 / 1024 AS UNSIGNED ) AS table_size_mb\nFROM information_schema.tables\nWHERE table_schema = '@{item().database_name}'\n  AND table_name   = '@{item().table_name}';\n",
 										"type": "Expression"
 									}
 								},
@@ -103,7 +103,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@greater(\n  float(\n    coalesce(\n      activity('Lookup_Table_Size').output.firstRow.table_size_mb,\n      0\n    )\n  ),\n  5\n)\n",
+									"value": "@greater(\n  int(activity('Lookup_Table_Size').output.firstRow.table_size_mb),\n  5\n)\n",
 									"type": "Expression"
 								},
 								"ifFalseActivities": [
