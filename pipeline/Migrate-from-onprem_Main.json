@@ -223,7 +223,7 @@
 													"type": "Expression"
 												},
 												"watermark_column": {
-													"value": "@item().watermark_column\n",
+													"value": "pipeline().watermark_column",
 													"type": "Expression"
 												},
 												"last_watermark": {
