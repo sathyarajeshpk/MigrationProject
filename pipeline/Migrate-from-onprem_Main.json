@@ -215,11 +215,11 @@
 											"waitOnCompletion": true,
 											"parameters": {
 												"database_name": {
-													"value": "@item().database_name\n",
+													"value": "pipeline().parameters.database_name",
 													"type": "Expression"
 												},
 												"table_name": {
-													"value": "@item().table_name\n",
+													"value": "pipeline().parameters.table_name",
 													"type": "Expression"
 												},
 												"watermark_column": {
