@@ -25,7 +25,7 @@
 					"source": {
 						"type": "MySqlSource",
 						"query": {
-							"value": "SELECT\n  database_name,\n  table_name\nFROM etl_control.changed_tables_queue;\n",
+							"value": "SELECT\n    q.database_name,\n    q.table_name,\n    w.watermark_column\nFROM etl_control.changed_tables_queue q\nJOIN etl_control.table_watermark w\n  ON q.database_name = w.database_name\n AND q.table_name    = w.table_name;\n",
 							"type": "Expression"
 						}
 					},
@@ -78,7 +78,10 @@
 							"typeProperties": {
 								"source": {
 									"type": "MySqlSource",
-									"query": "SELECT\n    (data_length + index_length) / 1024 / 1024 AS table_size_mb\nFROM information_schema.tables\nWHERE table_schema = '@{item().database_name}'\n  AND table_name   = '@{item().table_name}';\n"
+									"query": {
+										"value": "SELECT\n  CAST( (data_length + index_length) / 1024 / 1024 AS UNSIGNED ) AS table_size_mb\nFROM information_schema.tables\nWHERE table_schema = '@{item().database_name}'\n  AND table_name   = '@{item().table_name}';\n",
+										"type": "Expression"
+									}
 								},
 								"dataset": {
 									"referenceName": "MySqlTable1",
@@ -100,7 +103,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@greater(\n  float(activity('Lookup_Table_Size').output.firstRow.table_size_mb),\n  5.0\n)\n",
+									"value": "@greater(\n   int(activity('Lookup_Table_Size').output.firstRow.table_size_mb),\n   5\n)\n",
 									"type": "Expression"
 								},
 								"ifFalseActivities": [
@@ -108,7 +111,14 @@
 										"name": "Copy_To_Bronze_copy2",
 										"description": "This does incremental copy to the bronze layer ",
 										"type": "Copy",
-										"dependsOn": [],
+										"dependsOn": [
+											{
+												"activity": "Set_NewWatermark_copy2",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
 										"policy": {
 											"timeout": "0.12:00:00",
 											"retry": 0,
@@ -152,17 +162,41 @@
 										],
 										"outputs": [
 											{
-												"referenceName": "ds_adls_bronze_parquet",
+												"referenceName": "tobronze_smallfiles",
 												"type": "DatasetReference"
 											}
 										]
+									},
+									{
+										"name": "Set_NewWatermark_copy2",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "CurrentHighWatermark",
+											"value": {
+												"value": "@formatDateTime(addMinutes(utcNow(),330),'yyyy-MM-dd HH:mm:ss')\n",
+												"type": "Expression"
+											}
+										}
 									}
 								],
 								"ifTrueActivities": [
 									{
 										"name": "PL_Copy_By_Store",
 										"type": "ExecutePipeline",
-										"dependsOn": [],
+										"dependsOn": [
+											{
+												"activity": "Set_NewWatermark_copy1",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
 										"policy": {
 											"secureInput": false
 										},
@@ -174,11 +208,43 @@
 											},
 											"waitOnCompletion": true,
 											"parameters": {
-												"database_name": "@item().database_name\n",
-												"table_name": "@item().table_name\n",
-												"watermark_column": "@item().watermark_column\n",
-												"last_watermark": "@activity('Lookup_LastWatermark').output.firstRow.last_watermark\n",
-												"new_watermark": "@variables('CurrentHighWatermark')\n"
+												"database_name": {
+													"value": "@item().database_name\n",
+													"type": "Expression"
+												},
+												"table_name": {
+													"value": "@item().table_name\n",
+													"type": "Expression"
+												},
+												"watermark_column": {
+													"value": "@item().watermark_column\n",
+													"type": "Expression"
+												},
+												"last_watermark": {
+													"value": "@activity('Lookup_LastWatermark').output.firstRow.last_watermark\n",
+													"type": "Expression"
+												},
+												"new_watermark": {
+													"value": "@variables('CurrentHighWatermark')\n",
+													"type": "Expression"
+												}
+											}
+										}
+									},
+									{
+										"name": "Set_NewWatermark_copy1",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "CurrentHighWatermark",
+											"value": {
+												"value": "@formatDateTime(addMinutes(utcNow(),330),'yyyy-MM-dd HH:mm:ss')\n",
+												"type": "Expression"
 											}
 										}
 									}
@@ -190,7 +256,7 @@
 							"type": "Lookup",
 							"dependsOn": [
 								{
-									"activity": "Set_NewWatermark",
+									"activity": "If Condition1",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -221,14 +287,7 @@
 						{
 							"name": "Set_NewWatermark",
 							"type": "SetVariable",
-							"dependsOn": [
-								{
-									"activity": "If Condition1",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
+							"dependsOn": [],
 							"policy": {
 								"secureOutput": false,
 								"secureInput": false
