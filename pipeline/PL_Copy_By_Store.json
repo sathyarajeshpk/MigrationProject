@@ -64,7 +64,7 @@
 								"source": {
 									"type": "MySqlSource",
 									"query": {
-										"value": "@concat(\n  'SELECT * FROM `',\n  pipeline().parameters.database_name, '`.`',\n  pipeline().parameters.table_name, '` ',\n  'WHERE store_id = ', item().store_id, ' ',\n  'AND `', pipeline().parameters.watermark_column, '` > ''',\n  pipeline().parameters.last_watermark, ''' ',\n  'AND `', pipeline().parameters.watermark_column, '` <= ''',\n  pipeline().parameters.new_watermark, ''''\n)\n",
+										"value": "@concat(\n  'SELECT * FROM `',\n  pipeline().parameters.database_name, '`.`',\n  pipeline().parameters.table_name, '` ',\n  'WHERE `', pipeline().parameters.watermark_column, '` > ''',\n  pipeline().parameters.last_watermark,\n  ''' AND `', pipeline().parameters.watermark_column, '` <= ''',\n  pipeline().parameters.new_watermark,\n  ''' AND store_id = ''',\n  item().store_id,\n  ''''\n)\n",
 										"type": "Expression"
 									}
 								},
@@ -97,7 +97,13 @@
 							"outputs": [
 								{
 									"referenceName": "ds_adls_bronze_parquet",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"p_database_name": "@pipeline().parameters.database_name",
+										"p_table_name": "@pipeline().parameters.table_name",
+										"p_store_id": "@item().store_id",
+										"p_load_date": "@formatDateTime(utcNow(),'yyyy-MM-dd')"
+									}
 								}
 							]
 						}
