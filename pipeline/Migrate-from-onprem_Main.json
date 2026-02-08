@@ -293,6 +293,8 @@
 						{
 							"name": "Set_NewWatermark",
 							"type": "SetVariable",
+							"state": "Inactive",
+							"onInactiveMarkAs": "Succeeded",
 							"dependsOn": [],
 							"policy": {
 								"secureOutput": false,
