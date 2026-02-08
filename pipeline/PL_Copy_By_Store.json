@@ -18,7 +18,7 @@
 					"source": {
 						"type": "MySqlSource",
 						"query": {
-							"value": "@concat(\n  'SELECT DISTINCT store_id ',\n  'FROM `', pipeline().parameters.database_name, '`.`',\n            pipeline().parameters.table_name, '` ',\n  'WHERE `', pipeline().parameters.watermark_column, '` > ''',\n  if(\n      or(\n          equals(pipeline().parameters.last_watermark, ''),\n          equals(pipeline().parameters.last_watermark, null)\n      ),\n      '1900-01-01 00:00:00',\n      pipeline().parameters.last_watermark\n  ),\n  ''' ',\n  'AND `', pipeline().parameters.watermark_column, '` <= ''',\n  pipeline().parameters.new_watermark,\n  ''''\n)\n",
+							"value": "@concat(\n  'SELECT DISTINCT store_id ',\n  'FROM `', pipeline().parameters.database_name, '`.`',\n            pipeline().parameters.table_name, '` ',\n  'WHERE `', pipeline().parameters.watermark_column, '` > ',\n  'COALESCE(NULLIF(''',\n      pipeline().parameters.last_watermark,\n  ''',''''), ''1900-01-01 00:00:00'') ',\n  'AND `', pipeline().parameters.watermark_column, '` <= ',\n  'COALESCE(NULLIF(''',\n      pipeline().parameters.new_watermark,\n  ''',''''), ''9999-12-31 23:59:59'')'\n)\n",
 							"type": "Expression"
 						}
 					},
@@ -64,7 +64,7 @@
 								"source": {
 									"type": "MySqlSource",
 									"query": {
-										"value": "@concat(\n  'SELECT * FROM `',\n  pipeline().parameters.database_name, '`.`',\n  pipeline().parameters.table_name, '` ',\n  'WHERE `', pipeline().parameters.watermark_column, '` > ''',\n  pipeline().parameters.last_watermark,\n  ''' AND `', pipeline().parameters.watermark_column, '` <= ''',\n  pipeline().parameters.new_watermark,\n  ''' AND store_id = ''',\n  item().store_id,\n  ''''\n)\n",
+										"value": "@concat(\n  'SELECT * FROM `',\n  pipeline().parameters.database_name, '`.`',\n  pipeline().parameters.table_name, '` ',\n  'WHERE store_id = ', item().store_id, ' ',\n  'AND `', pipeline().parameters.watermark_column, '` > ''',\n  pipeline().parameters.last_watermark, ''' ',\n  'AND `', pipeline().parameters.watermark_column, '` <= ''',\n  pipeline().parameters.new_watermark, ''''\n)\n",
 										"type": "Expression"
 									}
 								},
@@ -101,8 +101,8 @@
 									"parameters": {
 										"p_database_name": "@pipeline().parameters.database_name",
 										"p_table_name": "@pipeline().parameters.table_name",
-										"p_store_id": "@item().store_id",
-										"p_load_date": "@formatDateTime(utcNow(),'yyyy-MM-dd')"
+										"p_load_date": "@formatDateTime(utcNow(),'yyyy-MM-dd')",
+										"p_store_id": "@item().store_id"
 									}
 								}
 							]
