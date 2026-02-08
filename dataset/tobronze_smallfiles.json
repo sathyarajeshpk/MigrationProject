@@ -5,12 +5,29 @@
 			"referenceName": "ToDatalake",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"p_database_name": {
+				"type": "string"
+			},
+			"p_table_name": {
+				"type": "string"
+			},
+			"p_store_id": {
+				"type": "string"
+			},
+			"p_load_date": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "Parquet",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"folderPath": "@concat(   'mysql/',   dataset().p_database_name,   '/',   dataset().p_table_name,   '/load_date=',   dataset().p_load_date,   '/store_id=',   dataset().p_store_id )",
+				"folderPath": {
+					"value": "@concat(   'mysql/',   dataset().p_database_name,   '/',   dataset().p_table_name,   '/load_date=',   dataset().p_load_date,   '/store_id=',   dataset().p_store_id)",
+					"type": "Expression"
+				},
 				"fileSystem": "datalake"
 			},
 			"compressionCodec": "snappy"
