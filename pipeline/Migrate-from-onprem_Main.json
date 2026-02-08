@@ -163,7 +163,13 @@
 										"outputs": [
 											{
 												"referenceName": "tobronze_smallfiles",
-												"type": "DatasetReference"
+												"type": "DatasetReference",
+												"parameters": {
+													"p_database_name": "@item().database_name",
+													"p_table_name": "@item().table_name",
+													"p_store_id": "'all'",
+													"p_load_date": "@formatDateTime(utcNow(),'yyyy-MM-dd')"
+												}
 											}
 										]
 									},
